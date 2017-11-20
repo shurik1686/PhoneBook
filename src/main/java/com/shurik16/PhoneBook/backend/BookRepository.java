@@ -11,6 +11,10 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     List<Book> findByNameLikeIgnoreCase(String nameFilter);
 
+    Book findBookByIp(String nameFilter);
+
+    Book findBookByName(String nameFilter);
+
     List<Book> findByNameLikeIgnoreCase(String nameFilter, Pageable pageable);
 
     long countByNameLike(String nameFilter);

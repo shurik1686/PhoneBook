@@ -27,11 +27,21 @@ public class Book implements Serializable {
 
     private String phone;
 
-    private String shortPhone;
+    private String shortphone;
 
-    private String mobilePhone;
+    private String mobilephone;
+
+    private String ip;
 
     public Book() {}
+
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
 
     public long getId() {
         return id;
@@ -74,18 +84,31 @@ public class Book implements Serializable {
     }
 
     public String getShortPhone() {
-        return shortPhone;
+        return shortphone;
     }
 
     public void setShortPhone(String shortPhone) {
-        this.shortPhone = shortPhone;
+        this.shortphone = shortPhone;
     }
 
     public String getMobilePhone() {
-        return mobilePhone;
+        return mobilephone;
     }
 
     public void setMobilePhone(String mobilePhone) {
-        this.mobilePhone = mobilePhone;
+        this.mobilephone = mobilePhone;
+    }
+
+    @Override
+    public String toString() {
+        return "Book{" +
+                "id=" + id +
+                ", company='" + company + '\'' +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                ", phone='" + phone + '\'' +
+                ", shortphone='" + shortphone + '\'' +
+                ", mobilephone='" + mobilephone + '\'' +
+                '}';
     }
 }

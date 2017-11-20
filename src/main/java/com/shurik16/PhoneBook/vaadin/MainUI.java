@@ -8,6 +8,7 @@ import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
 import org.vaadin.spring.events.EventBus;
 import org.vaadin.spring.events.EventScope;
@@ -21,6 +22,16 @@ import org.vaadin.viritin.grid.MGrid;
 import org.vaadin.viritin.label.RichText;
 import org.vaadin.viritin.layouts.MHorizontalLayout;
 import org.vaadin.viritin.layouts.MVerticalLayout;
+
+import javax.net.ssl.HttpsURLConnection;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.URL;
+
+import static org.springframework.http.HttpHeaders.USER_AGENT;
 
 
 /**
@@ -41,15 +52,18 @@ public class MainUI extends UI {
     final int PAGESIZE = 45;
 
     private MGrid<Book> list = new MGrid<>(Book.class)
-            .withProperties("id", "company", "name", "email", "phone", "shortPhone", "mobilePhone")
-            .withColumnHeaders("Номер", "Название компании", "Имя", "Почта", "Телефон", "Короткий номер", "Мобильный")
+            .withProperties("id", "company", "name", "email", "phone", "shortPhone", "mobilePhone", "ip")
+            .withColumnHeaders("Номер", "Название компании", "Имя", "Почта", "Телефон", "Короткий номер", "Мобильный", "Сетевой адрес")
             .withFullWidth();
 
     private MTextField filterByName = new MTextField()
             .withPlaceholder("Filter by name");
-//    private Switch filterByDone = new Switch("Выполненые");
+    //    private Switch filterByDone = new Switch("Выполненые");
     private Button addNew = new MButton(VaadinIcons.PLUS, this::add);
     private Button edit = new MButton(VaadinIcons.PENCIL, this::edit);
+    private Button call = new MButton(VaadinIcons.PHONE, this::calls);
+    private Label label = new Label("Пользователь:");
+    private Label labelName = new Label("Пользователь ");
     private Button delete = new ConfirmButton(VaadinIcons.TRASH,
             "Are you sure you want to delete the entry?", this::remove);
 
@@ -62,11 +76,24 @@ public class MainUI extends UI {
 
     @Override
     protected void init(VaadinRequest vaadinRequest) {
+        String username = vaadinRequest.getRemoteAddr();
+
+        Book book = repo.findBookByIp(username);
+
+        String str;
+        if (book != null)
+            str = book.getName();
+        else
+            str = "не найден";
+        labelName.setValue(str);
+
         DisclosurePanel aboutBox = new DisclosurePanel("Описание:", new RichText().withMarkDownResource("/welcome.md"));
         setContent(
                 new MVerticalLayout(
+                        label,
+                        labelName,
                         aboutBox,
-                        new MHorizontalLayout(filterByName, /*filterByCompany,*/ addNew, edit, delete),
+                        new MHorizontalLayout(filterByName, /*filterByCompany,*/ addNew, edit, delete, call),
                         list
                 ).expand(list)
         );
@@ -96,15 +123,16 @@ public class MainUI extends UI {
         adjustActionButtonState();
 
     }
-/*
-    private void listEntities(Boolean doneFilter) {
-        String likeFilter = "%" + doneFilter + "%";
-        list.setRows(repo.findByDone(doneFilter));
 
-        adjustActionButtonState();
+    /*
+        private void listEntities(Boolean doneFilter) {
+            String likeFilter = "%" + doneFilter + "%";
+            list.setRows(repo.findByDone(doneFilter));
 
-    }
-*/
+            adjustActionButtonState();
+
+        }
+    */
     public void add(Button.ClickEvent clickEvent) {
         edit(new Book());
     }
@@ -119,6 +147,35 @@ public class MainUI extends UI {
         listEntities();
     }
 
+    public void calls(Button.ClickEvent e) {
+
+        Book b = list.asSingleSelect().getValue();
+
+        Book book = repo.findBookByName(labelName.getValue());
+        System.out.println(labelName.getValue());
+        System.out.println(book);
+        System.out.println(book.getIp());
+
+        if (book != null) {
+            String server = "";
+            if(book.getIp().startsWith("172.16.2"))
+                server = "172.16.2.170";
+            else if (book.getIp().startsWith("172.16.5"))
+                server = "172.16.5.5";
+            else if(book.getIp().startsWith("192.168.0"))
+                server = "192.168.0.60";
+            else
+                return;
+
+            String str = "http://" + server + "/phonebook/index.php?callnum="
+                    + b.getShortPhone() + "&ext=" + book.getShortPhone();
+            try {
+                sendGet(str);
+            } catch (Exception e1) {
+            }
+        }
+    }
+
     protected void edit(final Book bookEntry) {
         bookForm.setEntity(bookEntry);
         bookForm.openInModalPopup();
@@ -129,4 +186,31 @@ public class MainUI extends UI {
         listEntities();
         bookForm.closePopup();
     }
+
+    private void sendGet(String url) throws Exception {
+
+        URL obj = new URL(url);
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+        // optional default is GET
+        con.setRequestMethod("GET");
+
+        //add request header
+        con.setRequestProperty("User-Agent", USER_AGENT);
+
+        int responseCode = con.getResponseCode();
+
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(con.getInputStream()));
+        String inputLine;
+        StringBuffer response = new StringBuffer();
+
+        while ((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
+        }
+
+        in.close();
+
+    }
+
 }

@@ -31,6 +31,7 @@ import org.vaadin.viritin.layouts.MVerticalLayout;
         TextField phone = new MTextField("Телефон");
         TextField shortPhone = new MTextField("Коротки т.");
         TextField mobilePhone = new MTextField("Мобильник");
+        TextField ip = new MTextField("Сетевой адрес");
 
         public BookForm(BookRepository r, EventBus.UIEventBus b) {
             super(Book.class);
@@ -68,7 +69,8 @@ import org.vaadin.viritin.layouts.MVerticalLayout;
                             email,
                             phone,
                             shortPhone,
-                            mobilePhone
+                            mobilePhone,
+                            ip
                     ).withWidth(""),
                     getToolbar()
             ).withWidth("");

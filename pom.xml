@@ -9,6 +9,8 @@
         <version>1.5.3.RELEASE</version>
     </parent>
 
+    <packaging>war</packaging>
+
     <groupId>com.shurik16</groupId>
     <artifactId>PhoneBook</artifactId>
     <version>1.0-SNAPSHOT</version>
