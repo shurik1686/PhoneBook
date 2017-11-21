@@ -57,11 +57,12 @@ public class MainUI extends UI {
             .withFullWidth();
 
     private MTextField filterByName = new MTextField()
-            .withPlaceholder("Filter by name");
+            .withPlaceholder("Фильтер по имени");
     //    private Switch filterByDone = new Switch("Выполненые");
     private Button addNew = new MButton(VaadinIcons.PLUS, this::add);
     private Button edit = new MButton(VaadinIcons.PENCIL, this::edit);
     private Button call = new MButton(VaadinIcons.PHONE, this::calls);
+    private Button mail = new MButton(VaadinIcons.ENVELOPE_O, this::mails);
     private Label label = new Label("Пользователь:");
     private Label labelName = new Label("Пользователь ");
     private Button delete = new ConfirmButton(VaadinIcons.TRASH,
@@ -93,7 +94,7 @@ public class MainUI extends UI {
                         label,
                         labelName,
                         aboutBox,
-                        new MHorizontalLayout(filterByName, /*filterByCompany,*/ addNew, edit, delete, call),
+                        new MHorizontalLayout(filterByName, /*filterByCompany,*/ addNew, edit, delete, call,mail),
                         list
                 ).expand(list)
         );
@@ -147,15 +148,23 @@ public class MainUI extends UI {
         listEntities();
     }
 
+    public void mails(Button.ClickEvent e) {
+        getUI().getPage().open("mailto:"+list.asSingleSelect().getValue().getEmail(), "_blank");
+    }
+
     public void calls(Button.ClickEvent e) {
 
         Book b = list.asSingleSelect().getValue();
 
         Book book = repo.findBookByName(labelName.getValue());
-        System.out.println(labelName.getValue());
-        System.out.println(book);
-        System.out.println(book.getIp());
+        //System.out.println(labelName.getValue());
+       // System.out.println(book);
+       // System.out.println(book.getIp());
+        SelctForm sub = new SelctForm(b,book.getShortPhone());
 
+        UI.getCurrent().addWindow(sub);
+
+        /*
         if (book != null) {
             String server = "";
             if(book.getIp().startsWith("172.16.2"))
@@ -173,7 +182,7 @@ public class MainUI extends UI {
                 sendGet(str);
             } catch (Exception e1) {
             }
-        }
+        }*/
     }
 
     protected void edit(final Book bookEntry) {
