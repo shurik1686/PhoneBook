@@ -13,7 +13,7 @@
 
     <groupId>com.shurik16</groupId>
     <artifactId>PhoneBook</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.RELEASE</version>
     <description>Телефонная книга Холдинга</description>
 
     <properties>
@@ -38,10 +38,14 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
         </dependency>
-
         <!-- vaadin4spring https://github.com/peholmst/vaadin4spring
              contains lots of handy helpers for serious Spring + Vaadin
              applications. This example uses event bus to decouple the editor
