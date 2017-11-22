@@ -7,9 +7,7 @@ import com.vaadin.annotations.Title;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.*;
 import com.vaadin.spring.annotation.SpringUI;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.UI;
+import com.vaadin.ui.*;
 import org.vaadin.spring.events.EventBus;
 import org.vaadin.spring.events.EventScope;
 import org.vaadin.spring.events.annotation.EventBusListenerMethod;
@@ -61,12 +59,12 @@ public class MainUI extends UI {
     //    private Switch filterByDone = new Switch("Выполненые");
     private Button addNew = new MButton(VaadinIcons.PLUS, this::add);
     private Button edit = new MButton(VaadinIcons.PENCIL, this::edit);
-    private Button call = new MButton(VaadinIcons.PHONE, this::calls);
+    private MenuBar call = new MenuBar();
     private Button mail = new MButton(VaadinIcons.ENVELOPE_O, this::mails);
     private Label label = new Label("Пользователь:");
     private Label labelName = new Label("Пользователь ");
     private Button delete = new ConfirmButton(VaadinIcons.TRASH,
-            "Are you sure you want to delete the entry?", this::remove);
+            "Удалить выбранную запись?", this::remove);
 
 
     public MainUI(BookRepository r, BookForm f, EventBus.UIEventBus b) {
@@ -77,17 +75,28 @@ public class MainUI extends UI {
 
     @Override
     protected void init(VaadinRequest vaadinRequest) {
-        String username = vaadinRequest.getRemoteAddr();
+
+        //call.setCaption("Вызов");
+        //call.setIcon(VaadinIcons.PHONE);
+        call.setAutoOpen(true);
+
+
+        MenuBar.MenuItem callitem = call.addItem("",VaadinIcons.PHONE,this::calls);
+        callitem.addItem("Короткий", VaadinIcons.PHONE, this::calls);
+        callitem.addItem("Городской", VaadinIcons.PHONE_LANDLINE, this::calls);
+        callitem.addItem("Сотовый", VaadinIcons.MOBILE_RETRO, this::calls);
+
+                String username = vaadinRequest.getRemoteAddr();
 
         Book book = repo.findBookByIp(username);
 
         //System.out.println(book+" "+ username);
 
-        MHorizontalLayout components = new MHorizontalLayout(filterByName, /*filterByCompany,*/call,  mail);
+        MHorizontalLayout components = new MHorizontalLayout(filterByName, /*filterByCompany,*/call, mail);
         String str;
         if (book != null) {
-          if (book.getPosition() != null && book.getPosition().startsWith("Админ")) {
-              components = new MHorizontalLayout(filterByName, /*filterByCompany,*/  addNew, edit, delete, call, mail);
+            if (book.getPosition() != null && book.getPosition().startsWith("Админ")) {
+                components = new MHorizontalLayout(filterByName, /*filterByCompany,*/  addNew, edit, delete, call, mail);
             }
             str = book.getName();
         } else
@@ -156,21 +165,48 @@ public class MainUI extends UI {
     }
 
     public void mails(Button.ClickEvent e) {
-
-
-       // getUI().getPage().open("mailto:" + list.asSingleSelect().getValue().getEmail(), "_blank");
         Page.getCurrent().open("mailto:" + list.asSingleSelect().getValue().getEmail(), null);
     }
 
-    public void calls(Button.ClickEvent e) {
+    public void calls(MenuBar.MenuItem e) {
+
+        if(list.asSingleSelect().getValue()==null){
+            Notification.show("Контакт не выбран!", Notification.Type.HUMANIZED_MESSAGE);
+            return;}
 
         Book b = list.asSingleSelect().getValue();
 
-        Book book = repo.findBookByName(labelName.getValue());
+        Book bookuser = repo.findBookByName(labelName.getValue());
 
-        SelctForm sub = new SelctForm(b, book);
+        if (bookuser != null) {
+            String server = "";
+            if (bookuser.getIp().startsWith("172.16.2") ||
+                    bookuser.getIp().startsWith("127.0.0") ||
+                    bookuser.getIp().startsWith("0:0:0:0:0:0:0"))
+                server = "172.16.2.170";
+            else if (bookuser.getIp().startsWith("172.16.5"))
+                server = "172.16.5.5";
+            else if (bookuser.getIp().startsWith("192.168.0"))
+                server = "192.168.0.60";
+            else
+                return;
+            String phone = e.getText();
+            if (phone.startsWith("Кор"))
+                phone = b.getShortPhone();
+            else if (phone.startsWith("Гор"))
+                phone = b.getPhone();
+            else if (phone.startsWith("Сот"))
+                phone = b.getMobilePhone();
+            else
+                return;
 
-        UI.getCurrent().addWindow(sub);
+            String str = "http://" + server + "/phonebook/index.php?callnum="
+                    + phone + "&ext=" + bookuser.getShortPhone();
+            try {
+                sendGet(str);
+            } catch (Exception e1) {
+            }
+        }
 
     }
 
@@ -184,5 +220,29 @@ public class MainUI extends UI {
         listEntities();
         bookForm.closePopup();
     }
+    private void sendGet(String url) throws Exception {
 
+        URL obj = new URL(url);
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+        // optional default is GET
+        con.setRequestMethod("GET");
+
+        //add request header
+        con.setRequestProperty("User-Agent", USER_AGENT);
+
+        int responseCode = con.getResponseCode();
+
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(con.getInputStream()));
+        String inputLine;
+        StringBuffer response = new StringBuffer();
+
+        while ((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
+        }
+
+        in.close();
+
+    }
 }
