@@ -40,7 +40,27 @@ public class Book implements Serializable {
 
     private String ip;
 
+    private String position;
+
+    private String city;
+
     public Book() {}
+
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
 
     public String getIp() {
         return ip;
@@ -116,6 +136,9 @@ public class Book implements Serializable {
                 ", phone='" + phone + '\'' +
                 ", shortphone='" + shortphone + '\'' +
                 ", mobilephone='" + mobilephone + '\'' +
+                ", ip='" + ip + '\'' +
+                ", position='" + position + '\'' +
+                ", city='" + city + '\'' +
                 '}';
     }
 }

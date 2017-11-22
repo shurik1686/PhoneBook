@@ -16,66 +16,71 @@ import org.vaadin.viritin.layouts.MFormLayout;
 import org.vaadin.viritin.layouts.MVerticalLayout;
 
 
-    @UIScope
-    @SpringComponent
-    public class BookForm extends AbstractForm<Book> {
+@UIScope
+@SpringComponent
+public class BookForm extends AbstractForm<Book> {
 
-        private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-        EventBus.UIEventBus eventBus;
-        BookRepository repo;
+    EventBus.UIEventBus eventBus;
+    BookRepository repo;
 
-        TextField company = new MTextField("Название компании");
-        TextField name = new MTextField("Имя");
-        TextField email = new MTextField("Почта");
-        TextField phone = new MTextField("Телефон");
-        TextField shortPhone = new MTextField("Коротки т.");
-        TextField mobilePhone = new MTextField("Мобильник");
-        TextField ip = new MTextField("Сетевой адрес");
+    TextField city = new MTextField("Город");
+    TextField company = new MTextField("Название компании");
+    TextField name = new MTextField("Имя");
+    TextField position = new MTextField("Должность");
+    TextField email = new MTextField("Почта");
+    TextField phone = new MTextField("Телефон");
+    TextField shortPhone = new MTextField("Коротки т.");
+    TextField mobilePhone = new MTextField("Мобильник");
+    TextField ip = new MTextField("Сетевой адрес");
 
-        public BookForm(BookRepository r, EventBus.UIEventBus b) {
-            super(Book.class);
-            this.repo = r;
-            this.eventBus = b;
+    public BookForm(BookRepository r, EventBus.UIEventBus b) {
+        super(Book.class);
+        this.repo = r;
+        this.eventBus = b;
 
-            setSavedHandler(book -> {
+        setSavedHandler(book -> {
 
-                repo.save(book);
+            repo.save(book);
 
-                eventBus.publish(this, new BookModifiedEvent(book));
-            });
-            setResetHandler(p -> eventBus.publish(this, new BookModifiedEvent(p)));
+            eventBus.publish(this, new BookModifiedEvent(book));
+        });
+        setResetHandler(p -> eventBus.publish(this, new BookModifiedEvent(p)));
 
-            setSizeUndefined();
-        }
-/*
-        @Override
-        protected void bind() {
-            getBinder()
-                    .forMemberField(start_day)
-                    .withConverter(new LocalDateToDateConverter());
-            getBinder()
-                    .forMemberField(end_day)
-                    .withConverter(new LocalDateToDateConverter());
-            super.bind();
-        }
-*/
-        @Override
-        protected Component createContent() {
-            return new MVerticalLayout(
-                    new MFormLayout(
-                            company,
-                            name,
-                            email,
-                            phone,
-                            shortPhone,
-                            mobilePhone,
-                            ip
-                    ).withWidth(""),
-                    getToolbar()
-            ).withWidth("");
-        }
+        setSizeUndefined();
     }
+
+    /*
+            @Override
+            protected void bind() {
+                getBinder()
+                        .forMemberField(start_day)
+                        .withConverter(new LocalDateToDateConverter());
+                getBinder()
+                        .forMemberField(end_day)
+                        .withConverter(new LocalDateToDateConverter());
+                super.bind();
+            }
+    */
+    @Override
+    protected Component createContent() {
+        return new MVerticalLayout(
+                new MFormLayout(
+                        city,
+                        company,
+                        name,
+                        position,
+                        email,
+                        phone,
+                        shortPhone,
+                        mobilePhone,
+                        ip
+                ).withWidth(""),
+                getToolbar()
+        ).withWidth("");
+    }
+}
 
 
 

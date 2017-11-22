@@ -52,8 +52,8 @@ public class MainUI extends UI {
     final int PAGESIZE = 45;
 
     private MGrid<Book> list = new MGrid<>(Book.class)
-            .withProperties("id", "company", "name", "email", "phone", "shortPhone", "mobilePhone", "ip")
-            .withColumnHeaders("Номер", "Название компании", "Имя", "Почта", "Телефон", "Короткий номер", "Мобильный", "Сетевой адрес")
+            .withProperties("city", "company", "name", "position", "email", "phone", "shortPhone", "mobilePhone")
+            .withColumnHeaders("Город", "Компания", "Имя", "Должность", "Почта", "Телефон", "Короткий н.", "Мобильный")
             .withFullWidth();
 
     private MTextField filterByName = new MTextField()
@@ -79,12 +79,23 @@ public class MainUI extends UI {
     protected void init(VaadinRequest vaadinRequest) {
         String username = vaadinRequest.getRemoteAddr();
 
+        addNew.setDisableOnClick(true);
+        delete.setDisableOnClick(true);
+        edit.setDisableOnClick(true);
+
         Book book = repo.findBookByIp(username);
 
+        System.out.println(book);
+
         String str;
-        if (book != null)
+        if (book != null) {
+            if (book.getPosition() != null && book.getPosition().startsWith("Админ")) {
+                addNew.setDisableOnClick(false);
+                delete.setDisableOnClick(false);
+                edit.setDisableOnClick(false);
+            }
             str = book.getName();
-        else
+        } else
             str = "не найден";
         labelName.setValue(str);
 
@@ -94,7 +105,7 @@ public class MainUI extends UI {
                         label,
                         labelName,
                         aboutBox,
-                        new MHorizontalLayout(filterByName, /*filterByCompany,*/ addNew, edit, delete, call,mail),
+                        new MHorizontalLayout(filterByName, /*filterByCompany,*/ addNew, edit, delete, call, mail),
                         list
                 ).expand(list)
         );
@@ -149,7 +160,7 @@ public class MainUI extends UI {
     }
 
     public void mails(Button.ClickEvent e) {
-        getUI().getPage().open("mailto:"+list.asSingleSelect().getValue().getEmail(), "_blank");
+        getUI().getPage().open("mailto:" + list.asSingleSelect().getValue().getEmail(), "_blank");
     }
 
     public void calls(Button.ClickEvent e) {
@@ -157,32 +168,11 @@ public class MainUI extends UI {
         Book b = list.asSingleSelect().getValue();
 
         Book book = repo.findBookByName(labelName.getValue());
-        //System.out.println(labelName.getValue());
-       // System.out.println(book);
-       // System.out.println(book.getIp());
-        SelctForm sub = new SelctForm(b,book.getShortPhone());
+
+        SelctForm sub = new SelctForm(b, book.getShortPhone());
 
         UI.getCurrent().addWindow(sub);
 
-        /*
-        if (book != null) {
-            String server = "";
-            if(book.getIp().startsWith("172.16.2"))
-                server = "172.16.2.170";
-            else if (book.getIp().startsWith("172.16.5"))
-                server = "172.16.5.5";
-            else if(book.getIp().startsWith("192.168.0"))
-                server = "192.168.0.60";
-            else
-                return;
-
-            String str = "http://" + server + "/phonebook/index.php?callnum="
-                    + b.getShortPhone() + "&ext=" + book.getShortPhone();
-            try {
-                sendGet(str);
-            } catch (Exception e1) {
-            }
-        }*/
     }
 
     protected void edit(final Book bookEntry) {
@@ -194,32 +184,6 @@ public class MainUI extends UI {
     public void onPersonModified(BookModifiedEvent event) {
         listEntities();
         bookForm.closePopup();
-    }
-
-    private void sendGet(String url) throws Exception {
-
-        URL obj = new URL(url);
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-        // optional default is GET
-        con.setRequestMethod("GET");
-
-        //add request header
-        con.setRequestProperty("User-Agent", USER_AGENT);
-
-        int responseCode = con.getResponseCode();
-
-        BufferedReader in = new BufferedReader(
-                new InputStreamReader(con.getInputStream()));
-        String inputLine;
-        StringBuffer response = new StringBuffer();
-
-        while ((inputLine = in.readLine()) != null) {
-            response.append(inputLine);
-        }
-
-        in.close();
-
     }
 
 }

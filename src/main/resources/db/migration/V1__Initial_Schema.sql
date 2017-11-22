@@ -7,7 +7,9 @@ CREATE TABLE book (
   shortphone varchar(255) DEFAULT NULL,
   mobilephone varchar(255) DEFAULT NULL,
   ip varchar(255) DEFAULT NULL,
+  position varchar(255) DEFAULT NULL,
+  city varchar(255) DEFAULT NULL,
   primary key (id));
 
-INSERT INTO book (id,company,name,email,phone,shortphone,mobilephone, ip) VALUES
+INSERT INTO book (id,company,name,email,phone,shortphone,mobilephone, ip, position, city) VALUES
   (10,'Компания 1','админ','172.16.2.170','461','463','+54654654','127.0.0.1');
