@@ -17,33 +17,36 @@ import static org.springframework.http.HttpHeaders.USER_AGENT;
 
 public class SelctForm extends Window {
     Book book;
+    Book bookuser;
     RadioButtonGroup<String> single =
             new RadioButtonGroup<>("Номер:");
-    String shotPhone;
 
 
-    public SelctForm(Book book, String shotPhone) {
+    public SelctForm(Book book, Book bookuser) {
         super("Выбор телефона");
         this.book = book;
-        this.shotPhone = shotPhone;
+        this.bookuser = bookuser;
         center();
-        single.setItems("Коротки", "Городской", "Сотовый");
+        single.setItems("Короткий", "Городской", "Сотовый");
         single.setSelectedItem("Коротки");
         setClosable(false);
         setContent(new MVerticalLayout(single,
                 new MHorizontalLayout(
-                new Button("Вызов", event -> calls()),
-                new Button("Закрыть", event -> close()))));
+                        new Button("Вызов", event -> calls()),
+                        new Button("Закрыть", event -> close()))));
     }
 
     private void calls() {
+
         if (book != null) {
             String server = "";
-            if (book.getIp().startsWith("172.16.2") || book.getIp().startsWith("127.0.0"))
+            if (bookuser.getIp().startsWith("172.16.2") ||
+                    bookuser.getIp().startsWith("127.0.0") ||
+                    bookuser.getIp().startsWith("0:0:0:0:0:0:0"))
                 server = "172.16.2.170";
-            else if (book.getIp().startsWith("172.16.5"))
+            else if (bookuser.getIp().startsWith("172.16.5"))
                 server = "172.16.5.5";
-            else if (book.getIp().startsWith("192.168.0"))
+            else if (bookuser.getIp().startsWith("192.168.0"))
                 server = "192.168.0.60";
             else
                 return;
@@ -58,7 +61,7 @@ public class SelctForm extends Window {
                 return;
 
             String str = "http://" + server + "/phonebook/index.php?callnum="
-                    + phone + "&ext=" + shotPhone;
+                    + phone + "&ext=" + bookuser.getShortPhone();
 
             try {
                 sendGet(str);

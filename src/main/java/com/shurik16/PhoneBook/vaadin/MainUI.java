@@ -5,7 +5,7 @@ import com.shurik16.PhoneBook.backend.BookRepository;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.icons.VaadinIcons;
-import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.*;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Label;
@@ -57,7 +57,7 @@ public class MainUI extends UI {
             .withFullWidth();
 
     private MTextField filterByName = new MTextField()
-            .withPlaceholder("Фильтер по имени");
+            .withPlaceholder("Фильтр по имени");
     //    private Switch filterByDone = new Switch("Выполненые");
     private Button addNew = new MButton(VaadinIcons.PLUS, this::add);
     private Button edit = new MButton(VaadinIcons.PENCIL, this::edit);
@@ -79,38 +79,34 @@ public class MainUI extends UI {
     protected void init(VaadinRequest vaadinRequest) {
         String username = vaadinRequest.getRemoteAddr();
 
-        addNew.setDisableOnClick(true);
-        delete.setDisableOnClick(true);
-        edit.setDisableOnClick(true);
-
         Book book = repo.findBookByIp(username);
 
-        System.out.println(book);
+        //System.out.println(book+" "+ username);
 
+        MHorizontalLayout components = new MHorizontalLayout(filterByName, /*filterByCompany,*/call,  mail);
         String str;
         if (book != null) {
-            if (book.getPosition() != null && book.getPosition().startsWith("Админ")) {
-                addNew.setDisableOnClick(false);
-                delete.setDisableOnClick(false);
-                edit.setDisableOnClick(false);
+          if (book.getPosition() != null && book.getPosition().startsWith("Админ")) {
+              components = new MHorizontalLayout(filterByName, /*filterByCompany,*/  addNew, edit, delete, call, mail);
             }
             str = book.getName();
         } else
             str = "не найден";
+
+
         labelName.setValue(str);
 
         DisclosurePanel aboutBox = new DisclosurePanel("Описание:", new RichText().withMarkDownResource("/welcome.md"));
         setContent(
                 new MVerticalLayout(
-                        label,
-                        labelName,
+                        new MHorizontalLayout(label, labelName),
                         aboutBox,
-                        new MHorizontalLayout(filterByName, /*filterByCompany,*/ addNew, edit, delete, call, mail),
+                        components,
                         list
                 ).expand(list)
         );
         listEntities();
-
+        list.sort("name");
         list.asSingleSelect().addValueChangeListener(e -> adjustActionButtonState());
         filterByName.addValueChangeListener(e -> {
             listEntities(e.getValue());
@@ -160,7 +156,10 @@ public class MainUI extends UI {
     }
 
     public void mails(Button.ClickEvent e) {
-        getUI().getPage().open("mailto:" + list.asSingleSelect().getValue().getEmail(), "_blank");
+
+
+       // getUI().getPage().open("mailto:" + list.asSingleSelect().getValue().getEmail(), "_blank");
+        Page.getCurrent().open("mailto:" + list.asSingleSelect().getValue().getEmail(), null);
     }
 
     public void calls(Button.ClickEvent e) {
@@ -169,7 +168,7 @@ public class MainUI extends UI {
 
         Book book = repo.findBookByName(labelName.getValue());
 
-        SelctForm sub = new SelctForm(b, book.getShortPhone());
+        SelctForm sub = new SelctForm(b, book);
 
         UI.getCurrent().addWindow(sub);
 
