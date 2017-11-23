@@ -22,6 +22,7 @@ import org.vaadin.viritin.layouts.MHorizontalLayout;
 import org.vaadin.viritin.layouts.MVerticalLayout;
 
 import javax.net.ssl.HttpsURLConnection;
+import javax.servlet.http.Cookie;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
@@ -65,6 +66,12 @@ public class MainUI extends UI {
     private Label labelName = new Label("Пользователь ");
     private Button delete = new ConfirmButton(VaadinIcons.TRASH,
             "Удалить выбранную запись?", this::remove);
+    private Button buttonClear = new MButton(VaadinIcons.CLOSE_SMALL, new Button.ClickListener() {
+        @Override
+        public void buttonClick(Button.ClickEvent event) {
+            filterByName.setValue("");
+        }
+    });
 
 
     public MainUI(BookRepository r, BookForm f, EventBus.UIEventBus b) {
@@ -81,26 +88,25 @@ public class MainUI extends UI {
         call.setAutoOpen(true);
 
 
-        MenuBar.MenuItem callitem = call.addItem("",VaadinIcons.PHONE,this::calls);
+        MenuBar.MenuItem callitem = call.addItem("", VaadinIcons.PHONE, this::calls);
         callitem.addItem("Короткий", VaadinIcons.PHONE, this::calls);
         callitem.addItem("Городской", VaadinIcons.PHONE_LANDLINE, this::calls);
         callitem.addItem("Сотовый", VaadinIcons.MOBILE_RETRO, this::calls);
 
-                String username = vaadinRequest.getRemoteAddr();
+        String username = vaadinRequest.getRemoteAddr();
 
         Book book = repo.findBookByIp(username);
 
-        //System.out.println(book+" "+ username);
 
-        MHorizontalLayout components = new MHorizontalLayout(filterByName, /*filterByCompany,*/call, mail);
+        MHorizontalLayout components = new MHorizontalLayout(filterByName, buttonClear,/*filterByCompany,*/call, mail);
         String str;
         if (book != null) {
             if (book.getPosition() != null && book.getPosition().startsWith("Админ")) {
-                components = new MHorizontalLayout(filterByName, /*filterByCompany,*/  addNew, edit, delete, call, mail);
+                components = new MHorizontalLayout(filterByName, buttonClear,/*filterByCompany,*/  addNew, edit, delete, call, mail);
             }
             str = book.getName();
         } else
-            str = "не найден";
+            str = "не найден (" + username + ")";
 
 
         labelName.setValue(str);
@@ -170,9 +176,10 @@ public class MainUI extends UI {
 
     public void calls(MenuBar.MenuItem e) {
 
-        if(list.asSingleSelect().getValue()==null){
+        if (list.asSingleSelect().getValue() == null) {
             Notification.show("Контакт не выбран!", Notification.Type.HUMANIZED_MESSAGE);
-            return;}
+            return;
+        }
 
         Book b = list.asSingleSelect().getValue();
 
@@ -199,6 +206,7 @@ public class MainUI extends UI {
                 phone = b.getMobilePhone();
             else
                 return;
+            if (bookuser.getShortPhone().length() == 0 && phone.length() == 0) return;
 
             String str = "http://" + server + "/phonebook/index.php?callnum="
                     + phone + "&ext=" + bookuser.getShortPhone();
@@ -220,6 +228,7 @@ public class MainUI extends UI {
         listEntities();
         bookForm.closePopup();
     }
+
     private void sendGet(String url) throws Exception {
 
         URL obj = new URL(url);
