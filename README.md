@@ -8,3 +8,4 @@ The call is made by sending a GET request to the Asterisk server. To determine w
 When accessing the application the client's ip address is determined based on the subnet selects the necessary server address stored in the project properties file.
 To work correctly, users must be configured in Asterisk.
 Adding and editing the phone book is available to a user with the Administrator position. Additionally, the option to call the mail client to prepare an email for the selected subscriber has been added. By default, the application starts with a database H2 in menory additional configuration is needed. To start up permanently, you must change the properties and pom settings.
+Address where the app is available http://localhost:8085/book/
