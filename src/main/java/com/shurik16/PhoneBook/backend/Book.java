@@ -2,12 +2,12 @@ package com.shurik16.PhoneBook.backend;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 @Entity
 @Table(name = "BOOK")
+
 public class Book implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -24,11 +24,6 @@ public class Book implements Serializable {
     @Size(min = 3, max = 50, message = "name must be longer than 3 and less than 40 characters")
     private String name;
 
-   /* @Pattern(regexp = "^(?:[a-zA-Z0-9_'^&/+-])+(?:\\.(?:[a-zA-Z0-9_'^&/+-])+)" +
-            "*@(?:(?:\\[?(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))\\.)" +
-            "{3}(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\]?)|(?:[a-zA-Z0-9-]+\\.)" +
-            "+(?:[a-zA-Z]){2,}\\.?)$",
-            message = "заданный имэйл не может существовать")*/
     private String email;
 
     private String phone;
@@ -44,7 +39,37 @@ public class Book implements Serializable {
 
     private String city;
 
+    private String office;
+
+    private String cabinet;
+
+    private String department;
+
     public Book() {}
+
+    public String getOffice() {
+        return office;
+    }
+
+    public void setOffice(String office) {
+        this.office = office;
+    }
+
+    public String getCabinet() {
+        return cabinet;
+    }
+
+    public void setCabinet(String cabinet) {
+        this.cabinet = cabinet;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
 
     public String getPosition() {
         return position;
@@ -139,6 +164,9 @@ public class Book implements Serializable {
                 ", ip='" + ip + '\'' +
                 ", position='" + position + '\'' +
                 ", city='" + city + '\'' +
+                ", office='" + office + '\'' +
+                ", cabinet='" + cabinet + '\'' +
+                ", department='" + department + '\'' +
                 '}';
     }
 }

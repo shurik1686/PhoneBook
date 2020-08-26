@@ -8,6 +8,7 @@ import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.*;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.vaadin.spring.events.EventBus;
 import org.vaadin.spring.events.EventScope;
 import org.vaadin.spring.events.annotation.EventBusListenerMethod;
@@ -26,9 +27,11 @@ import javax.servlet.http.Cookie;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
+import java.util.ArrayList;
 
 import static org.springframework.http.HttpHeaders.USER_AGENT;
 
@@ -48,6 +51,11 @@ public class MainUI extends UI {
     BookForm bookForm;
     EventBus.UIEventBus eventBus;
 
+    @Value("${phonebook.asteriskip}")
+    private String asteriskip;
+
+    private String ipArray [];
+
     final int PAGESIZE = 45;
 
     private MGrid<Book> list = new MGrid<>(Book.class)
@@ -58,6 +66,7 @@ public class MainUI extends UI {
     private MTextField filterByName = new MTextField()
             .withPlaceholder("Фильтр по имени");
     //    private Switch filterByDone = new Switch("Выполненые");
+    private Book bookUser = null;
     private Button addNew = new MButton(VaadinIcons.PLUS, this::add);
     private Button edit = new MButton(VaadinIcons.PENCIL, this::edit);
     private MenuBar call = new MenuBar();
@@ -85,8 +94,23 @@ public class MainUI extends UI {
 
         //call.setCaption("Вызов");
         //call.setIcon(VaadinIcons.PHONE);
+
+        if (asteriskip.length()>0)
+            ipArray = asteriskip.split(";");
+
         call.setAutoOpen(true);
 
+        list.setDescriptionGenerator(book -> {
+            String rez = "Сотрудник: " + book.getName() + "\n" +
+                    "Компания: " + book.getCompany() + "\n" +
+                    "Отдел: " + book.getDepartment() + "\n" +
+                    "Должность: " + book.getPosition() + "\n" +
+                    "Город: " + book.getCity() + "\n" +
+                    "Офис: " + book.getOffice() + " Кабинет: "
+                    + book.getCabinet();
+
+            return rez;
+        });
 
         MenuBar.MenuItem callitem = call.addItem("", VaadinIcons.PHONE, this::calls);
         callitem.addItem("Короткий", VaadinIcons.PHONE, this::calls);
@@ -95,16 +119,16 @@ public class MainUI extends UI {
 
         String username = vaadinRequest.getRemoteAddr();
 
-        Book book = repo.findBookByIp(username);
+        bookUser = repo.findBookByIp(username);
 
 
         MHorizontalLayout components = new MHorizontalLayout(filterByName, buttonClear,/*filterByCompany,*/call, mail);
         String str;
-        if (book != null) {
-            if (book.getPosition() != null && book.getPosition().startsWith("Админ")) {
+        if (bookUser != null) {
+            if (bookUser.getPosition() != null && bookUser.getPosition().startsWith("Админ")) {
                 components = new MHorizontalLayout(filterByName, buttonClear,/*filterByCompany,*/  addNew, edit, delete, call, mail);
             }
-            str = book.getName();
+            str = bookUser.getName();
         } else
             str = "не найден (" + username + ")";
 
@@ -181,12 +205,23 @@ public class MainUI extends UI {
             return;
         }
 
-        Book b = list.asSingleSelect().getValue();
+        Book bookSelect = list.asSingleSelect().getValue();
 
-        Book bookuser = repo.findBookByName(labelName.getValue());
+        //bookUser = repo.findBookByName(labelName.getValue());
 
-        if (bookuser != null) {
+
+        if (bookUser != null) {
+            //Определим куда слать запрос. Если офисов много.
             String server = "";
+            for(String ip:ipArray) {
+                System.out.print(ip.split("/")[0]+"-");
+                System.out.println(ip.split("/")[1]);
+                if (bookUser.getIp().startsWith(ip.split("/")[0])) {
+                    server = ip.split("/")[1];
+                    break;
+                }
+            }
+            /**
             if (bookuser.getIp().startsWith("172.16.2") ||
                     bookuser.getIp().startsWith("127.0.0") ||
                     bookuser.getIp().startsWith("0:0:0:0:0:0:0"))
@@ -197,19 +232,20 @@ public class MainUI extends UI {
                 server = "192.168.0.60";
             else
                 return;
+             */
             String phone = e.getText();
             if (phone.startsWith("Кор"))
-                phone = b.getShortPhone();
+                phone = bookSelect.getShortPhone();
             else if (phone.startsWith("Гор"))
-                phone = b.getPhone();
+                phone = bookSelect.getPhone();
             else if (phone.startsWith("Сот"))
-                phone = b.getMobilePhone();
+                phone = bookSelect.getMobilePhone();
             else
                 return;
-            if (bookuser.getShortPhone().length() == 0 && phone.length() == 0) return;
+            if (bookUser.getShortPhone().length() == 0 && phone.length() == 0) return;
 
             String str = "http://" + server + "/phonebook/index.php?callnum="
-                    + phone + "&ext=" + bookuser.getShortPhone();
+                    + phone + "&ext=" + bookUser.getShortPhone();
             try {
                 sendGet(str);
             } catch (Exception e1) {

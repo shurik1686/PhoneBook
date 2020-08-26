@@ -29,11 +29,15 @@ public class BookForm extends AbstractForm<Book> {
     TextField company = new MTextField("Название компании");
     TextField name = new MTextField("Имя");
     TextField position = new MTextField("Должность");
+    TextField department = new MTextField("Отдел");
     TextField email = new MTextField("Почта");
     TextField phone = new MTextField("Телефон");
     TextField shortPhone = new MTextField("Коротки т.");
     TextField mobilePhone = new MTextField("Мобильник");
     TextField ip = new MTextField("Сетевой адрес");
+    TextField office = new MTextField("Офис");
+    TextField cabinet = new MTextField("Кабинет");
+
 
     public BookForm(BookRepository r, EventBus.UIEventBus b) {
         super(Book.class);
@@ -69,6 +73,9 @@ public class BookForm extends AbstractForm<Book> {
                 new MFormLayout(
                         city,
                         company,
+                        department,
+                        office,
+                        cabinet,
                         name,
                         position,
                         email,
